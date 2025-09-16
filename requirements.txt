@@ -1,0 +1,10 @@
+pandas
+seaborn
+matplotlib
+scikit-learn
+numpy
+simpy
+pyarrow
+fastparquet
+requests
+kaggle
