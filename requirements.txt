@@ -1,10 +1,7 @@
 pandas
-seaborn
-matplotlib
-scikit-learn
-numpy
-simpy
 pyarrow
-fastparquet
-requests
+scikit-learn
+seaborn
+simpy
 kaggle
+requests
