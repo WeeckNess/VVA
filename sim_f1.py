@@ -4,6 +4,8 @@ import numpy as np
 from scipy.spatial import cKDTree
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import LabelEncoder
+import os
+import glob
 
 
 # Streamlit configuration
@@ -14,7 +16,23 @@ st.title('F1 Weather Simulator — simulate race results from weather and histor
 @st.cache_data
 def load_all():
     # load datasets (may raise if missing)
-    weather = pd.read_parquet('resources/weather_features_v4 1.parquet')
+    # find possible weather parquet files (be tolerant to filename changes)
+    weather = pd.DataFrame()
+    try:
+        candidates = glob.glob(os.path.join('resources', '*weather*.parquet'))
+        if candidates:
+            weather = pd.read_parquet(candidates[0])
+        else:
+            # try the exact legacy name as a last attempt
+            legacy = os.path.join('resources', 'weather_features_v4 1.parquet')
+            if os.path.exists(legacy):
+                weather = pd.read_parquet(legacy)
+            else:
+                # no weather file found — return empty DataFrame and continue
+                weather = pd.DataFrame()
+    except Exception:
+        # any error reading parquet -> fallback to empty
+        weather = pd.DataFrame()
     races = pd.read_csv('resources/races.csv')
     circuits = pd.read_csv('resources/circuits.csv')
     results = pd.read_csv('resources/results.csv')
@@ -57,8 +75,7 @@ def detect_weather_features(df: pd.DataFrame):
 wf = detect_weather_features(weather)
 weather_features = [wf[f] for f in ['temperature', 'precipitation', 'windspeed'] if wf.get(f)]
 if not weather_features:
-    st.error('Aucune colonne météo détectée dans le parquet `resources/weather_features_v4 1.parquet`.')
-    st.stop()
+    st.warning('Aucune colonne météo détectée — le simulateur continuera sans données météo historiques. Vous pouvez définir manuellement les conditions.')
 
 
 # Sidebar: global controls
